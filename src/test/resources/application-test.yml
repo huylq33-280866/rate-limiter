@@ -1,0 +1,15 @@
+# Test Configuration - Embedded Redis
+spring:
+  autoconfigure:
+    exclude: org.redisson.spring.starter.RedissonAutoConfigurationV2
+  redis:
+    cluster:
+      enabled: false
+    host: localhost
+    port: 6379
+
+# Embedded Redis will be started by test configuration
+embedded:
+  redis:
+    enabled: true
+    port: 6379

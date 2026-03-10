@@ -1,0 +1,75 @@
+rules:
+  # Premium API - generous limits per user
+  - id: premium-api-read
+    enabled: true
+    description: "Premium users read endpoints"
+    conditions:
+      method: "GET"
+      endpoint: "/api/v1/premium/*"
+    algorithm: "token-bucket"
+    limits:
+      requestsPerWindow: 1000
+      timeWindowSeconds: 3600
+    keyComponents:
+      - "userId"
+    priority: 1
+
+  # Premium API write
+  - id: premium-api-write
+    enabled: true
+    description: "Premium users write endpoints"
+    conditions:
+      method: "POST|PUT|DELETE"
+      endpoint: "/api/v1/premium/*"
+    algorithm: "token-bucket"
+    limits:
+      requestsPerWindow: 500
+      timeWindowSeconds: 3600
+    keyComponents:
+      - "userId"
+    priority: 2
+
+  # Free tier - strict limits
+  - id: free-tier-api
+    enabled: true
+    description: "Free tier - all endpoints"
+    conditions:
+      method: "*"
+      endpoint: "/api/v1/public/*"
+    algorithm: "sliding-window-counter"
+    limits:
+      requestsPerWindow: 100
+      timeWindowSeconds: 3600
+    keyComponents:
+      - "userId"
+    priority: 10
+
+  # IP-based limit (fraud prevention)
+  - id: withdraw-protection
+    enabled: true
+    description: "Prevent rapid withdrawals from same IP"
+    conditions:
+      method: "POST"
+      endpoint: "/banking/withdraw"
+    algorithm: "fixed-window-counter"
+    limits:
+      requestsPerWindow: 10
+      timeWindowSeconds: 86400
+    keyComponents:
+      - "ip"
+    priority: 5
+
+  # Global DDoS protection
+  - id: ddos-protection
+    enabled: true
+    description: "Global rate limit per IP"
+    conditions:
+      method: "*"
+      endpoint: "*"
+    algorithm: "sliding-window-log"
+    limits:
+      requestsPerWindow: 50000
+      timeWindowSeconds: 60
+    keyComponents:
+      - "ip"
+    priority: 100

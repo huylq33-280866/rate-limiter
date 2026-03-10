@@ -1,1 +1,3 @@
-spring.application.name=rate-limiter
+spring:
+  application:
+    name: rate-limiter
