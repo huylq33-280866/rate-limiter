@@ -44,12 +44,6 @@ public class TokenBucketRateLimiter implements RateLimiter {
     /** Redis key prefix for token bucket state */
     private static final String REDIS_KEY_PREFIX = "rate-limiter::token-bucket";
 
-    /** Default bucket capacity (if not specified) */
-    private static final long DEFAULT_CAPACITY = 100L;
-
-    /** TTL for rate limiter keys (24 hours) */
-    private static final long DEFAULT_TTL_SECONDS = 86400L;
-
     // ============ CONSTRUCTOR ============
 
     public TokenBucketRateLimiter(
@@ -211,19 +205,6 @@ public class TokenBucketRateLimiter implements RateLimiter {
     }
 
     /**
-     * Calculate tokens per second refill rate
-     *
-     * Example: 100 requests per 3600 seconds = 0.0278 tokens/sec
-     *
-     * @param limit requests per window
-     * @param timeWindowSeconds window duration
-     * @return tokens per second
-     */
-    private double calculateTokensPerSecond(long limit, long timeWindowSeconds) {
-        return (double) limit / timeWindowSeconds;
-    }
-
-    /**
      * Validate parameters before execution
      *
      * @param ruleId rule identifier
@@ -246,19 +227,5 @@ public class TokenBucketRateLimiter implements RateLimiter {
             throw new IllegalArgumentException("timeWindowSeconds must be > 0");
         }
     }
-
-    // ============ ERROR HANDLING ============
-
-    /**
-     * Handle Redis connection failure
-     * Fail-open pattern: Allow request to proceed via in-memory fallback
-     */
-    // See catch block in isAllowed() method
-
-    /**
-     * Handle Lua script execution failure
-     * Fail-open pattern: Log error and fall back to in-memory
-     */
-    // See catch block in checkRedisTokenBucket() method
 
 }

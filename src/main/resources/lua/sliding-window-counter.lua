@@ -44,15 +44,9 @@ if estimated_count < limit then
     -- Increment current window counter
     redis.call('HINCRBY', key, 'w' .. current_window, 1)
 
-    -- Clean up old windows (keep only last 20 to be safe)
-    local min_window = current_window - 20
-    local all_windows = redis.call('HKEYS', key)
-    for _, w in ipairs(all_windows) do
-        local window_num = tonumber(w:match('%d+') or '-1')
-        if window_num and window_num < min_window then
-            redis.call('HDEL', key, w)
-        end
-    end
+    -- Clean up: delete the window that's definitely expired (current - 2)
+    local old_window = current_window - 2
+    redis.call('HDEL', key, 'w' .. old_window)
 
     -- Set expiration
     redis.call('EXPIRE', key, window_seconds + 10)

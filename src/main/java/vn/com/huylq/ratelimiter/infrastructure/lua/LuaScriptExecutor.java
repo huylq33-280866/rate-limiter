@@ -6,15 +6,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 /**
- * Executes Lua scripts in Redis with EVALSHA optimization
- *
- * Strategy:
- * - Load all scripts at startup, cache SHA values
- * - Execute via EVALSHA (40 bytes vs 500+ for full script)
- * - Fallback to EVAL if SHA not found in Redis
- * - Handle both single-value and bulk returns
- *
- * This reduces network bandwidth by ~80% for script-heavy workloads
+ * Executes Lua scripts in Redis via Spring's DefaultRedisScript,
+ * which handles EVALSHA/EVAL fallback internally.
  *
  * Note: Bean is created by RateLimiterAutoConfiguration, not auto-discovered.
  */
@@ -48,33 +41,10 @@ public class LuaScriptExecutor {
      * @throws Exception if execution fails
      */
     public Long executeLuaScript(String scriptName, List<String> keys, List<String> args) {
-        String sha = scriptLoader.getSha(scriptName);
         String scriptContent = scriptLoader.getScriptContent(scriptName);
-
-        try {
-            // Try EVALSHA first (optimized - just sends 40-byte SHA)
-            DefaultRedisScript<Long> script = new DefaultRedisScript<>(scriptContent, Long.class);
-
-            Object result = redisTemplate.execute(script, keys, args.toArray());
-
-            return extractReturnValue(result);
-
-        } catch (Exception e) {
-            // If NOSCRIPT error, script not in Redis - fallback to EVAL
-            if (e.getMessage() != null && e.getMessage().contains("NOSCRIPT")) {
-                log.debug("Script cache miss for {}, loading via EVAL", scriptName);
-
-                // Fallback to EVAL with full script content
-                DefaultRedisScript<Long> script = new DefaultRedisScript<>(scriptContent, Long.class);
-                Object result = redisTemplate.execute(script, keys, args.toArray());
-
-                return extractReturnValue(result);
-            }
-
-            // Other errors - propagate
-            log.error("Failed to execute script {}: {}", scriptName, e.getMessage());
-            throw e;
-        }
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(scriptContent, Long.class);
+        Object result = redisTemplate.execute(script, keys, args.toArray());
+        return extractReturnValue(result);
     }
 
     /**
