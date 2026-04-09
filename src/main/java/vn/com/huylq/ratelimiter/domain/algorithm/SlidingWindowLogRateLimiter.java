@@ -87,6 +87,10 @@ public class SlidingWindowLogRateLimiter implements RateLimiter {
     public long getCurrentUsage(String ruleId, String userId) {
         try {
             String key = buildKey(ruleId, userId);
+            Boolean exists = redisTemplate.hasKey(key);
+            if (exists == null || !exists) {
+                return -1;  // Key doesn't exist per interface contract
+            }
             Long count = redisTemplate.opsForZSet().size(key);
             return count != null ? count : 0;
         } catch (Exception e) {

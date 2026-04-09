@@ -50,7 +50,7 @@ package vn.com.huylq.ratelimiter.config;
 
 /*
 
-1. INFRASTRUCTURE LAYER (Already Skeleton Created)
+1. INFRASTRUCTURE LAYER
    ✅ LuaScriptLoader.java
       - Load lua/*.lua scripts
       - Cache SHA values
@@ -60,24 +60,37 @@ package vn.com.huylq.ratelimiter.config;
       - Execute scripts via EVALSHA + EVAL fallback
       - Handle Redis exceptions
 
-   ⬜ TokenBucketRateLimiter.java (SKELETON CREATED)
-      - Implement checkRedisTokenBucket()
-      - Implement getCurrentUsage()
-      - Implement reset()
-      - Call luaScriptExecutor.executeLuaScript()
+   ✅ TokenBucketRateLimiter.java
+      - checkRedisTokenBucket()
+      - getCurrentUsage()
+      - reset()
+      - Calls luaScriptExecutor.executeLuaScript()
 
-   ⬜ InMemoryRateLimiter.java (FALLBACK)
+   ✅ LeakingBucketRateLimiter.java
+      - Fixed outflow rate, no bursts
+      - Redis Lua script for atomic operations
+
+   ✅ FixedWindowCounterRateLimiter.java
+      - Simple counter per fixed time window
+
+   ✅ SlidingWindowLogRateLimiter.java
+      - Precise sliding window using sorted set timestamps
+
+   ✅ SlidingWindowCounterRateLimiter.java
+      - Sliding window with sub-window counters
+
+   ✅ InMemoryRateLimiter.java (FALLBACK)
       - Per-instance rate limiting
       - Thread-safe state management
       - Auto-cleanup of expired entries
 
-   ⬜ RequestContextExtractor.java (ADAPTER)
+   ⬜ RequestContextExtractor.java (ADAPTER) - Future scope
       - Extract from HttpServletRequest
       - Parse token, validate signature
       - Extract userId with priority
       - Validate IP address
 
-   ⬜ RateLimitFilter.java (SPRING FILTER)
+   ⬜ RateLimitFilter.java (SPRING FILTER) - Future scope
       - Intercept requests
       - Call RequestContextExtractor
       - Call RuleEngine
@@ -85,22 +98,22 @@ package vn.com.huylq.ratelimiter.config;
       - Return 429 if rejected
 
 2. DOMAIN LAYER (INTERFACES)
-   ⬜ RateLimiter.java (INTERFACE)
+   ✅ RateLimiter.java (INTERFACE)
       - isAllowed(ruleId, userId, limit, window)
       - getCurrentUsage(ruleId, userId)
       - reset(ruleId, userId)
 
-   ⬜ RuleEngine.java (INTERFACE)
+   ⬜ RuleEngine.java (INTERFACE) - Future scope
       - evaluateRequest(context)
 
-   ⬜ RequestContext.java (VALUE OBJECT)
+   ⬜ RequestContext.java (VALUE OBJECT) - Future scope
       - userId, ip, method, endpoint, customAttributes
 
-   ⬜ RuleMatch.java (VALUE OBJECT)
+   ⬜ RuleMatch.java (VALUE OBJECT) - Future scope
       - ruleId, limits, keyComponents
 
 3. APPLICATION SERVICE LAYER
-   ⬜ RateLimiterApplicationService.java
+   ⬜ RateLimiterApplicationService.java - Future scope
       - Orchestrate RuleEngine + RateLimiter
       - Handle errors
       - Log decisions
@@ -111,10 +124,9 @@ package vn.com.huylq.ratelimiter.config;
       - Create RedisTemplate
       - Handle cluster/single-node modes
 
-   ⬜ RateLimiterAutoConfiguration.java
-      - Conditional bean creation
-      - Register filters
-      - Load configuration
+   ✅ RateLimiterAutoConfiguration.java
+      - Bean creation for all 5 algorithms + infrastructure
+      - Dependency ordering
 
 */
 

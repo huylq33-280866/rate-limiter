@@ -92,7 +92,7 @@ public class LeakingBucketRateLimiter implements RateLimiter {
             java.util.Map<Object, Object> bucket = redisTemplate.opsForHash().entries(key);
 
             if (bucket == null || bucket.isEmpty()) {
-                return 0;  // Queue is empty
+                return -1;  // Key doesn't exist per interface contract
             }
 
             // Extract current queue size
@@ -113,15 +113,15 @@ public class LeakingBucketRateLimiter implements RateLimiter {
      * @param ruleId Rate limit rule ID
      * @param userId User identifier
      * @param capacity Bucket capacity (max queue size)
-     * @param leakRatePerSecond Leak rate (requests/second)
+     * @param timeWindowSeconds Time window in seconds (used to derive leak rate)
      * @return true if request allowed, false if rejected
      */
-    private boolean checkRedisLeakingBucket(String ruleId, String userId, long capacity, long leakRatePerSecond) {
+    private boolean checkRedisLeakingBucket(String ruleId, String userId, long capacity, long timeWindowSeconds) {
         String key = buildKey(ruleId, userId);
         long now = System.currentTimeMillis();
 
-        // Leak rate: requests per second
-        double leakRate = (double) capacity / leakRatePerSecond;
+        // Leak rate: capacity / window = requests per second
+        double leakRate = (double) capacity / timeWindowSeconds;
 
         Long result = luaScriptExecutor.executeLuaScript(
                 "leaking-bucket",

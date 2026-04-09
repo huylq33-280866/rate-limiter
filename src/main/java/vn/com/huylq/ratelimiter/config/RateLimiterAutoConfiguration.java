@@ -20,10 +20,11 @@ import vn.com.huylq.ratelimiter.infrastructure.lua.LuaScriptLoader;
  * 1. RedisTemplate (provided by Spring Boot auto-config)
  * 2. LuaScriptLoader (loads scripts at startup)
  * 3. LuaScriptExecutor (executes scripts)
- * 4. InMemoryRateLimiter (fallback)
- * 5. TokenBucketRateLimiter (main implementation)
+ * 4. InMemoryRateLimiter (fallback for all algorithms)
+ * 5. Algorithm implementations (TokenBucket, LeakingBucket, FixedWindowCounter,
+ *    SlidingWindowLog, SlidingWindowCounter)
  *
- * Order is critical - components must be created in dependency order.
+ * Order is critical - infrastructure beans (1-4) must be created before algorithms (5).
  */
 @Slf4j
 @Configuration

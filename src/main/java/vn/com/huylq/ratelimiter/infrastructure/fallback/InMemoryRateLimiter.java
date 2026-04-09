@@ -139,7 +139,7 @@ public class InMemoryRateLimiter implements RateLimiter {
                 return (long) state.tokens;
             }
         } catch (Exception e) {
-            log.warn("Failed to get current usage for rule={}, userId={}", ruleId, userId);
+            log.warn("Failed to get current usage for rule={}, userId={}", ruleId, userId, e);
             return -1;
         }
     }
@@ -157,7 +157,7 @@ public class InMemoryRateLimiter implements RateLimiter {
             buckets.remove(key);
             log.debug("Reset rate limiter for rule={}, userId={}", ruleId, userId);
         } catch (Exception e) {
-            log.warn("Failed to reset rate limiter for rule={}, userId={}", ruleId, userId);
+            log.warn("Failed to reset rate limiter for rule={}, userId={}", ruleId, userId, e);
         }
     }
 

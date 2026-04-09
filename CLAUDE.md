@@ -11,8 +11,13 @@ Algorithms: TokenBucket, LeakingBucket, FixedWindowCounter, SlidingWindowLog, Sl
 - Thread safety required - concurrent requests to same key must be consistent
 
 ## Architecture:
-- Java 21, Spring Boot 4, Redis (Redisson), Hexagonal Architecture.
+- Java 11, Spring Boot 2.7.18, Redis (Redisson + Jedis), Hexagonal Architecture.
 - Package root: `vn.com.huylq.ratelimiter`
+
+## Development
+- Build: `mvn clean compile`
+- Test: `mvn test` (uses embedded Redis, no external Redis needed)
+- Single algorithm test: `mvn test -Dtest=TokenBucketRateLimiterTest`
 
 ## Gotchas
 - Sliding window requires sorted sets in Redis - `ZRANGEBYSCORE` for cleanup

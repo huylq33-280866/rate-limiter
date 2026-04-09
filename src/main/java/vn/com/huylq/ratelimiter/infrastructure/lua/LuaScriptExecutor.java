@@ -2,6 +2,7 @@ package vn.com.huylq.ratelimiter.infrastructure.lua;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
@@ -60,8 +61,11 @@ public class LuaScriptExecutor {
             return extractReturnValue(result);
 
         } catch (Exception e) {
-            // If NOSCRIPT error, script not in Redis - fallback to EVAL
-            if (e.getMessage() != null && e.getMessage().contains("NOSCRIPT")) {
+            // If NOSCRIPT error, script not in Redis cache - fallback to EVAL
+            boolean isNoScript = (e instanceof RedisSystemException &&
+                                  e.getMessage() != null &&
+                                  e.getMessage().contains("NOSCRIPT"));
+            if (isNoScript) {
                 log.debug("Script cache miss for {}, loading via EVAL", scriptName);
 
                 // Fallback to EVAL with full script content
